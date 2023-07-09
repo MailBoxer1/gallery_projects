@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Http\Resources\ProjectResource;
 use App\Models\Project;
 
 class ProjectController extends Controller
@@ -14,7 +15,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        //
+        return ProjectResource::collection(Project::all());
     }
 
     /**
@@ -30,7 +31,9 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        //
+        $project = Project::create($request->validated());
+
+        return ProjectResource::make($project);
     }
 
     /**
@@ -38,7 +41,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //
+        return ProjectResource::make($project);
     }
 
     /**
@@ -54,7 +57,9 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        //
+        $project->update($request->validated());
+
+        return ProjectResource::make($project);
     }
 
     /**
@@ -62,6 +67,8 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        $project->delete();
+
+        return response()->noContent();
     }
 }
