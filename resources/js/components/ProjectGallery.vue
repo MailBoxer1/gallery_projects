@@ -1,10 +1,27 @@
 <template>
-
+    <SingleProject></SingleProject>
 </template>
 
 <script>
+
+import SingleProject from './SingleProject.vue'
+
 export default {
-    name: "ProjectGallery"
+    components: {
+        SingleProject
+    },
+    name: "ProjectGallery",
+    data() {
+        return {
+
+        }
+    },
+    methods: {
+
+    },
+    mounted() {
+
+    }
 }
 </script>
 
