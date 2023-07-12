@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Support\Facades\File;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,5 +16,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('app');
 });
+
+Route::get('/public/images/{filename}', function ($filename) {
+    $path = storage_path('app/public/images/' . $filename);
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->name('image');
