@@ -71,19 +71,28 @@ class ProjectController extends Controller
         $request->validated();
 
         $id = $project->getKey();
-        $model = Project::find($id);
-        $imagePath = $model->image;
-        Storage::delete($imagePath);
 
         $image = $request->file('image');
+        if (isset($image)) {
+            $model = Project::find($id);
+            $imagePath = $model->image;
+            Storage::delete($imagePath);
 
-        $path = $image->store('public/images');
+            $path = $image->store('public/images');
+        }
+        if (isset($path)) {
+            $projectData = [
+                'title' => $request->get('title'),
+                'description' => $request->get('description'),
+                'image' => $path
+            ];
+        } else {
+            $projectData = [
+                'title' => $request->get('title'),
+                'description' => $request->get('description'),
+            ];
+        }
 
-        $projectData = [
-            'title' => $request->get('title'),
-            'description' => $request->get('description'),
-            'image' => $path
-        ];
 
         $project->update($projectData);
 
