@@ -17,9 +17,9 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->sentence(),
+            'title' => fake()->sentence(5),
             'description' => fake()->text(),
-            'image' => fake()->filePath()
+            'image' => fake()->filePath('public', 'images', 'png'),
         ];
     }
 }
