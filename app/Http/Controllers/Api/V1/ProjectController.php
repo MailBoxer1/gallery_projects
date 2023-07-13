@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use Illuminate\Support\Facades\Storage;
 
 class ProjectController extends Controller
 {
@@ -31,7 +32,17 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        $project = Project::create($request->validated());
+        $request->validated();
+        $image = $request->file('image');
+        $path = $image->store('public/images');
+
+        $projectData = [
+            'title' => $request->get('title'),
+            'description' => $request->get('description'),
+            'image' => $path
+        ];
+
+        $project = Project::create($projectData);
 
         return ProjectResource::make($project);
     }
@@ -57,7 +68,33 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        $project->update($request->validated());
+        $request->validated();
+
+        $id = $project->getKey();
+
+        $image = $request->file('image');
+        if (isset($image)) {
+            $model = Project::find($id);
+            $imagePath = $model->image;
+            Storage::delete($imagePath);
+
+            $path = $image->store('public/images');
+        }
+        if (isset($path)) {
+            $projectData = [
+                'title' => $request->get('title'),
+                'description' => $request->get('description'),
+                'image' => $path
+            ];
+        } else {
+            $projectData = [
+                'title' => $request->get('title'),
+                'description' => $request->get('description'),
+            ];
+        }
+
+
+        $project->update($projectData);
 
         return ProjectResource::make($project);
     }
