@@ -1,34 +1,18 @@
 <template>
-    <div class="creating" v-if="Creating">
-        <form class="decor" enctype="multipart/form-data">
-            <div class="form-left-decoration"></div>
-            <div class="form-right-decoration"></div>
-            <div class="circle"></div>
-            <div class="form-inner">
-                <img src="" alt="Изображение проекта" class="" v-if="newProject.image">
-                <input type="text" placeholder="Название" v-model="newProject.title">
-                <textarea placeholder="Описание" rows="5" v-model="newProject.description"></textarea>
-                <input type="file" id="" name="image" accept="image/*" v-on:change="createFileChange">
-                <input type="submit" value="Вернуться" v-on:click.prevent="closeCreating">
-                <input type="submit" value="Сохранить" v-on:click.prevent="saveProject">
-            </div>
-        </form>
-    </div>
-    <div class="updating" v-else-if="Updating">
-        <form class="decor">
-            <div class="form-left-decoration"></div>
-            <div class="form-right-decoration"></div>
-            <div class="circle"></div>
-            <div class="form-inner">
-                <img alt="Изображение проекта" class="" :src="redacted.image">
-                <input type="text" v-model="redacted.title">
-                <textarea placeholder="Описание" rows="5" v-model="redacted.description"></textarea>
-                <input type="file" id="" name="image" accept="image/*" v-on:change="updateFileChange">
-                <input type="submit" value="Вернуться" v-on:click.prevent="closeUpdating">
-                <input type="submit" value="Сохранить" v-on:click.prevent="modifyProject">
-            </div>
-        </form>
-    </div>
+
+    <CreatingProject v-if="Creating"
+    @closeCreating = "closeCreating"
+    ></CreatingProject>
+
+    <UpdatingProject  v-else-if="Updating"
+    @closeUpdating = "closeUpdating"
+    @updateProjects = "openUpdating"
+    :id="id"
+    :title="title"
+    :description="description"
+    :image="image"
+    ></UpdatingProject>
+
     <div class="wrapper" v-else>
         <main class="main">
             <div class="main__container">
@@ -57,7 +41,7 @@
                         v-bind:image="project.image"
                         v-bind:key="project.id"
                         @checkBox="selecting"
-                        @changeInfo="updateProject"
+                        @openUpdating="openUpdating"
                     ></SingleProject>
                 </table>
             </div>
@@ -70,32 +54,24 @@
 import axios from 'axios';
 
 import SingleProject from './SingleProject.vue'
+import CreatingProject from "./CreatingProject.vue";
+import UpdatingProject from "./UpdatingProject.vue";
 
 export default {
     components: {
-        SingleProject
+        SingleProject, CreatingProject, UpdatingProject
     },
     name: "ProjectGallery",
     data() {
         return {
             Creating: false,
             Updating: false,
-            newProject: {
-                "title": '',
-                "description": '',
-                "image": null,
-                "file": null,
-            },
-            redacted: {
-                "id": '',
-                "title": '',
-                "description": '',
-                "image": '',
-                "file": '',
-            },
             projects: [],
             checkbox: [],
-            tempFile: null
+            id: "",
+            title: "",
+            description: "",
+            image: "",
         }
     },
     methods: {
@@ -121,7 +97,6 @@ export default {
             this.Creating = true
         },
         closeCreating() {
-            this.tempFile = null
             this.Creating = false
             this.getProjects()
         },
@@ -143,86 +118,21 @@ export default {
                 this.getProjects();
             }
         },
-        async saveProject() {
-            const formData = new FormData();
-            formData.append('title', this.newProject['title']);
-            formData.append('description', this.newProject['description']);
-            formData.append('image', this.newProject['file']);
+        openUpdating(data) {
+            this.id = data['id']
 
-            const url = 'http://127.0.0.1:8000/api/v1/projects';
-
-            try {
-                const response = await axios.post(url, formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    })
-                    .then(response => {
-                    this.newProject['title'] = ''
-                    this.newProject['description'] = ''
-                    this.tempFile = null
-                    })
-                    .catch(error => {
-                        console.error(error);
-                    })
-                    .finally(() => {
-                        this.getProjects()
-                    });
-                } catch (error) {
-                console.error(error);
-            }
-        },
-        updateProject(data) {
-            this.redacted['id'] = data['id']
-
-            const obj = this.projects.find(obj => obj.id === this.redacted['id']);
-            this.redacted.title = obj.title
-            this.redacted.description = obj.description
-            this.redacted.image = obj.image
+            const obj = this.projects.find(obj => obj.id === this['id']);
+            this.title = obj.title
+            this.description = obj.description
+            this.image = obj.image
 
             this.Updating = true
         },
         closeUpdating() {
-            this.tempFile = null
             this.Updating = false
             this.getProjects()
         },
-        async modifyProject() {
-            const formData = new FormData();
-            formData.append('title', this.redacted['title']);
-            formData.append('description', this.redacted['description']);
-            formData.append('image', this.redacted['file']);
-            // Господи, величайший баг современности
-            formData.append('_method', 'PATCH');
 
-            let url = 'http://127.0.0.1:8000/api/v1/projects/' + this.redacted['id'];
-
-            try {
-                const response = await axios.post(url, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                })
-                    .then(response => {
-                        console.log(response.data)
-                    })
-                    .catch(error => {
-                        console.error(error);
-                    })
-                    .finally(async () => {
-                        await this.getProjects()
-                        this.updateProject({'id': this.redacted['id']})
-                    });
-            } catch (error) {
-                console.error(error);
-            }
-        },
-        createFileChange(event) {
-            this.newProject.file = event.target.files[0];
-        },
-        updateFileChange(event) {
-            this.redacted.file = event.target.files[0];
-        },
     },
     mounted() {
         this.getProjects()

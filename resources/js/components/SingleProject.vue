@@ -5,7 +5,7 @@
         </td>
         <td>
             <a v-bind:href="link"
-               @click.prevent="changeProjectInfo"
+               @click.prevent="openUpdating"
             >
                 {{ title }}
             </a>
@@ -31,8 +31,8 @@ export default {
         checkBoxActivated() {
             this.$emit('checkBox', {"id": this.id})
         },
-        changeProjectInfo() {
-            this.$emit('changeInfo', {"id": this.id})
+        openUpdating() {
+            this.$emit('openUpdating', {"id": this.id})
         },
     }
 }
