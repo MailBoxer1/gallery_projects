@@ -361,3 +361,9 @@ td:last-child {
     box-shadow: 0 0 10px 0 #f69a73 inset, 0 0 10px 4px #f69a73;
     color: #f69a73;
 }
+.span {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
